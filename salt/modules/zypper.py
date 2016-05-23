@@ -1533,6 +1533,15 @@ def download(*packages, **kwargs):
             'repository-alias': repo.getAttribute("alias"),
             'path': dld_result.getElementsByTagName("localfile")[0].getAttribute("path"),
         }
+
+        # Check the integrity of the downloaded package
+        if not __salt__['file.file_exists'](pkg_info['path']):
+            continue
+
+        checksum_cmd = ["rpm", "-K", pkg_info['path']]
+        pkg_info['signature-check'] = __salt__['cmd.run'](checksum_cmd,
+                                                          python_shell=False)
+
         pkg_ret[_get_first_aggregate_text(dld_result.getElementsByTagName("name"))] = pkg_info
 
     if pkg_ret:
