@@ -1534,13 +1534,13 @@ def download(*packages, **kwargs):
             'path': dld_result.getElementsByTagName("localfile")[0].getAttribute("path"),
         }
 
-        # Check the integrity of the downloaded package
         if not __salt__['file.file_exists'](pkg_info['path']):
             continue
 
-        checksum_cmd = ["rpm", "-K", pkg_info['path']]
-        pkg_info['signature-check'] = __salt__['cmd.run'](checksum_cmd,
-                                                          python_shell=False)
+        # Check the integrity of the downloaded package
+        checksum_cmd = ["rpm", "-K", "--quiet", pkg_info['path']]
+        if __salt__['cmd.retcode'](checksum_cmd, output_loglevel='trace', python_shell=False) != 0:
+            continue
 
         pkg_ret[_get_first_aggregate_text(dld_result.getElementsByTagName("name"))] = pkg_info
 
